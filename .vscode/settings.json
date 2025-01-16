@@ -1,0 +1,3 @@
+{
+  "python.analysis.extraPaths": ["./rag_system/components/search"]
+}
