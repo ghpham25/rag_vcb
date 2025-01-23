@@ -31,6 +31,7 @@ class AzureAISearch():
         self.search_service_endpoint = os.getenv("SEARCH_ENDPOINT")
         self.search_service_key = os.getenv("SEARCH_KEY")
         self.azure_openai_client = AzureOpenAIClient()
+        self.azure_openai_embedding_dimensions = self.azure_openai_client.get_parameters()["azure_openai_embedding_dimensions"]
 
     def create_index_client(self): 
         return SearchIndexClient(endpoint=self.search_service_endpoint, credential=AzureKeyCredential( self.search_service_key))
@@ -38,7 +39,7 @@ class AzureAISearch():
     def create_search_client(self, index_name): 
         return SearchClient(endpoint=self.search_service_endpoint, index_name=index_name, credential=AzureKeyCredential(self.search_service_key))
 
-    def create_index(self, index_name): 
+    def create_index(self, index_name, inspections = False): 
 
         index_client = self.create_index_client()
             # Step 1: Try to get the existing index
@@ -56,6 +57,7 @@ class AzureAISearch():
         SearchableField(name=os.getenv("CONTENT"), type=SearchFieldDataType.String),
         SearchableField(name=os.getenv("SOURCE"), type=SearchFieldDataType.String,
                         filterable=True),
+        SimpleField(name=os.getenv("OFFSET"), type=SearchFieldDataType.Int32),
         SimpleField(name=os.getenv("PAGE_NUMBER"), type=SearchFieldDataType.Int32,
                     filterable=True),
         SearchField(name=os.getenv("EMBEDDING"), type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
@@ -108,10 +110,22 @@ class AzureAISearch():
         result = index_client.create_or_update_index(index)
         print(f'{result.name} created')
 
+
+        if inspections:
+            for field in index_client.get_index(index_name).fields:
+                print(f"Name: {field.name}")
+                print(f"Type: {field.type}")
+                print(f"Searchable: {field.searchable}")
+                print(f"Filterable: {field.filterable}")
+                print(f"Sortable: {field.sortable}")
+                print(f"Facetable: {field.facetable}")
+                print(f"Key: {field.key}")
+                print("-" * 40)
+
     def upload_embeddings(self, index_name, data): 
         search_client = self.create_search_client(index_name)
         search_client.upload_documents(documents=data)
-    
+        
     def semantic_search(self, index_name, question): 
         vector_query = VectorizableTextQuery(text=question, 
                                             k_nearest_neighbors=os.getenv("K_NEAREST_NEIGHBORS"), 
