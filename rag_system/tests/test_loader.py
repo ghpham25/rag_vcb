@@ -4,16 +4,14 @@ from rag_system.components.chunkers.fixed_size_chunker import FixedSizePDFChunke
 from rag_system.components.embedders.azure_embedder import AzureEmbedder
 
 def test_loader(url):
+    '''
+    loading document to the index/ vector database
+    '''
     loader = AzurePDFLoader()
     data_chunks_by_page = loader.load(url)
     assert len(data_chunks_by_page) > 0    
     chunker = FixedSizePDFChunker()
     chunked_data = chunker.chunk(data_chunks_by_page)
-
-    # for data in chunked_data: 
-    #     print(data)
-
-    # print("Test loader and chunker passed")
     azure_embedder = AzureEmbedder()
     azure_embedder.embed_and_load(chunked_data)
 

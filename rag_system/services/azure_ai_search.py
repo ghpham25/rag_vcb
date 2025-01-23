@@ -135,7 +135,6 @@ class AzureAISearch():
         search_client = self.create_search_client(index_name)
         results = search_client.search(search_text = question, 
                                        vector_queries=[vector_query], 
-                                       query_type="semantic",
                                        select= os.getenv("SELECT_FIELDS"), 
                                        top = os.getenv("TOP_RESULTS")
                                        )

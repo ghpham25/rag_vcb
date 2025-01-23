@@ -7,8 +7,5 @@ class AzureSearch(SearchBase):
         self.search_client = AzureAISearch()
 
     def search(self, index_name, question):
-        '''
-        
-        '''
         return self.search_client.semantic_search(index_name, question)
     

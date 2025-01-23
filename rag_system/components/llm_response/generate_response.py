@@ -1,5 +1,6 @@
-from azure_search import AzureSearch
 from rag_system.services.azure_openai import AzureOpenAIClient
+from rag_system.components.search.azure_search import AzureSearch
+
 import os
 from dotenv import load_dotenv
 
@@ -10,13 +11,13 @@ class LLMResponseGenerator:
         self.searcher = AzureSearch()
         self.llm_client = AzureOpenAIClient().get_client()
         self.chat_completion_model = os.getenv("OPENAI_CHAT_COMPLETION_MODEL_NAME")
-
-    def generate_response(self, user_query):
+        
+    def generate_response(self, index_name, user_query):
         chat_history = []
 
         while True:
-            search_results = self.searcher.search(user_query)
-            data_source = [doc["sourcefile"] + ", page " + str(doc["page"]) + ": " + doc["content"].replace("\n", "").replace("\r", "") for doc in search_results]
+            search_results = self.searcher.search(index_name, user_query)
+            data_source = [doc[os.getenv("SOURCE")] + ", page " + str(doc[os.getenv("PAGE_NUMBER")]) + ": " + doc[os.getenv("CONTENT")].replace("\n", "").replace("\r", "") for doc in search_results]
             content = "\n".join(data_source)
 
             messages = [
